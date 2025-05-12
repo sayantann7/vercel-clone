@@ -1,0 +1,24 @@
+{
+  "name": "vercel-deploy-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc -b && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "dotenv": "^16.5.0",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "redis": "^5.0.1",
+    "typescript": "^5.8.3",
+    "vercel-deploy-service": "file:"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17"
+  }
+}

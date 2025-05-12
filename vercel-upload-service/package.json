@@ -1,0 +1,26 @@
+{
+  "name": "vercel",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc -b && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/express": "^5.0.1",
+    "aws-sdk": "^2.1692.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "redis": "^5.0.1",
+    "simple-git": "^3.27.0",
+    "typescript": "^5.8.3",
+    "vercel": "file:"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.18"
+  }
+}
