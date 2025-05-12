@@ -2,6 +2,7 @@ import { S3 } from "aws-sdk";
 import fs from "fs";
 import { get } from "http";
 import path from "path";
+require("dotenv").config();
 
 const s3 = new S3({
     accessKeyId: process.env.accessKeyId,

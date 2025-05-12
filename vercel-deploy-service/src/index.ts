@@ -18,8 +18,10 @@ async function main() {
             await downloadS3Folder(`output/${res.element}`);
             console.log("Building", res.element);
             await buildProject(res.element);
-            copyFinalDist(res.element);
-            publisher.hSet('build-status', res.element, 'deployed');
+            await copyFinalDist(res.element);
+            console.log("Copy completed, updating status...");
+            const status = await publisher.hSet('status', res.element, 'deployed');
+            console.log("Build status", status);
         }
     }
 }

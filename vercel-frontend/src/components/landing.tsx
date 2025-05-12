@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import axios from "axios"
 
-const BACKEND_UPLOAD_URL = "http://localhost:3000";
+const BACKEND_UPLOAD_URL = "http://localhost:3001";
 
 export function Landing() {
   const [repoUrl, setRepoUrl] = useState("");
@@ -68,7 +68,7 @@ export function Landing() {
           </div>
           <br />
           <Button className="w-full" variant="outline">
-            <a href={`http://${uploadId}.10kdevs.com/index.html`} target="_blank">
+            <a href={`http://${uploadId}.ziphub.site`} target="_blank">
               Visit Website
             </a>
           </Button>

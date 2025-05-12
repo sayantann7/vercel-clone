@@ -1,5 +1,6 @@
 import express from "express";
 import { S3 } from "aws-sdk";
+require("dotenv").config();
 
 const s3 = new S3({
     accessKeyId: process.env.accessKeyId,
@@ -14,10 +15,15 @@ app.get("/*", async (req, res) => {
 
     const id = host.split(".")[0];
     const filePath = req.path;
+    let updatedFilePath = filePath;
+
+    if (filePath === "/" || filePath === "") {
+        updatedFilePath = "/index.html";
+    }
 
     const contents = await s3.getObject({
         Bucket: "vercel",
-        Key: `dist/${id}${filePath}`
+        Key: `dist/${id}${updatedFilePath}`
     }).promise();
     
     const type = filePath.endsWith("html") ? "text/html" : filePath.endsWith("css") ? "text/css" : "application/javascript"
@@ -26,4 +32,4 @@ app.get("/*", async (req, res) => {
     res.send(contents.Body);
 })
 
-app.listen(3001);
+app.listen(3000);
