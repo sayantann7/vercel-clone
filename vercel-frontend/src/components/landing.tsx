@@ -64,7 +64,7 @@ export function Landing() {
         <CardContent>
           <div className="space-y-2">
             <Label htmlFor="deployed-url">Deployed URL</Label>
-            <Input id="deployed-url" readOnly type="url" value={`http://${uploadId}.vercel.com:3001/index.html`} />
+            <Input id="deployed-url" readOnly type="url" value={`http://${uploadId}.vercel.com:3001`} />
           </div>
           <br />
           <Button className="w-full" variant="outline">
