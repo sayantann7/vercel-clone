@@ -26,7 +26,7 @@ app.get("/*", async (req, res) => {
         Key: `dist/${id}${updatedFilePath}`
     }).promise();
     
-    const type = filePath.endsWith("html") ? "text/html" : filePath.endsWith("css") ? "text/css" : "application/javascript"
+    const type = updatedFilePath.endsWith("html") ? "text/html" : filePath.endsWith("css") ? "text/css" : "application/javascript"
     res.set("Content-Type", type);
 
     res.send(contents.Body);
