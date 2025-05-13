@@ -26,6 +26,8 @@ app.post("/deploy", async (req, res) => {
 
     const files = getAllFiles(path.join(__dirname, `output/${id}`));
 
+    console.log("Starting to upload files for", id);
+
     console.log("Uploading files to S3...");
 
     await Promise.all(
