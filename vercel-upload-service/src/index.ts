@@ -26,6 +26,8 @@ app.post("/deploy", async (req, res) => {
 
     const files = getAllFiles(path.join(__dirname, `output/${id}`));
 
+    console.log("Uploading files to S3...");
+
     await Promise.all(
         files.map(async file => {
             // Get path relative to the current directory
@@ -36,6 +38,8 @@ app.post("/deploy", async (req, res) => {
             await uploadFile(relativePath, file);
         })
     );
+
+    console.log("Files uploaded to S3");
 
 
     await new Promise((resolve) => setTimeout(resolve, 10000))
