@@ -12,7 +12,13 @@ publisher.connect();
 require("dotenv").config();
 console.log(process.env.endpoint);
 
-const subscriber = createClient();
+const subscriber = createClient({
+    socket: {
+        host: 'localhost',
+        port: 6379
+    }
+});
+
 subscriber.connect();
 
 const app = express();
