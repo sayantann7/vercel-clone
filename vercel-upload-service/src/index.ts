@@ -26,7 +26,7 @@ console.log("---------------------SUBSCRIBER---------------------")
 console.log(subscriber);
 console.log("---------------------SUBSCRIBER---------------------")
 
-subscriber.connect();
+await subscriber.connect();
 
 const app = express();
 app.use(cors())
