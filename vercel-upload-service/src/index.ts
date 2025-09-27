@@ -12,12 +12,19 @@ publisher.connect();
 require("dotenv").config();
 console.log(process.env.endpoint);
 
+
+console.log("---------------------TRYING TO CONNECT TO REDIS---------------------")
+
 const subscriber = createClient({
     socket: {
         host: 'localhost',
         port: 6379
     }
 });
+
+console.log("---------------------SUBSCRIBER---------------------")
+console.log(subscriber);
+console.log("---------------------SUBSCRIBER---------------------")
 
 subscriber.connect();
 
