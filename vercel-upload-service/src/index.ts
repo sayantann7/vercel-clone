@@ -2,10 +2,10 @@
 import express from "express";
 import cors from "cors";
 import simpleGit from "simple-git";
-import { generate } from "./utils";
-import { getAllFiles } from "./file";
+import { generate } from "./utils.js";
+import { getAllFiles } from "./file.js";
 import path from "path";
-import { uploadFile } from "./aws";
+import { uploadFile } from "./aws.js";
 import { createClient } from "redis";
 
 require("dotenv").config();
