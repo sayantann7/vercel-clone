@@ -6,6 +6,7 @@
     "dev": "tsc -b && node dist/index.js"
   },
   "keywords": [],
+  "type": "module",
   "author": "",
   "license": "ISC",
   "description": "",
