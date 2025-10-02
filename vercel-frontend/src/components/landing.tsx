@@ -11,7 +11,7 @@ import { Github, Upload, Rocket, ExternalLink, Copy, Check, RefreshCw } from "lu
 import axios from "axios"
 import { ThemeToggle } from "./theme-toggle"
 
-const BACKEND_UPLOAD_URL = "http://64.227.136.87:3001";
+const BACKEND_UPLOAD_URL = "http://34.100.177.101:3001";
 
 interface StatusLog {
   ts: number
