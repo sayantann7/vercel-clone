@@ -8,6 +8,11 @@ import path from "path";
 import { uploadFile } from "./aws.js";
 import { createClient } from "redis";
 import dotenv from "dotenv";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 console.log(process.env.endpoint);
