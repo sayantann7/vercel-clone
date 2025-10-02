@@ -81,11 +81,7 @@ export function Landing() {
     }, 3000);
   };
 
-  const deployedUrl = uploadId 
-    ? projectType === 'backend' 
-      ? `http://${uploadId}.api.ziphub.site` 
-      : `http://${uploadId}.ziphub.site`
-    : "";
+  const deployedUrl = uploadId ? `http://${uploadId}.ziphub.site` : "";
 
   const copyUrl = async () => {
     if (!deployedUrl) return;

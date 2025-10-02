@@ -2,12 +2,20 @@ import express from "express";
 import dotenv from "dotenv";
 import { createClient } from "redis";
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import AWS from "aws-sdk";
 
 dotenv.config();
 
 const app = express();
 
-// Connect to Redis to get port mappings
+// S3 Configuration for serving static files
+const s3 = new AWS.S3({
+    accessKeyId: process.env.accessKeyId,
+    secretAccessKey: process.env.secretAccessKey,
+    endpoint: process.env.endpoint
+});
+
+// Connect to Redis to get port mappings and check deployment type
 const redisClient = createClient({
     username: 'default',
     password: 'o2fs5b3mzpbhP8QAWQf9PpAJsgECJO5n',
@@ -17,49 +25,82 @@ const redisClient = createClient({
     }
 });
 
-redisClient.on('error', err => console.log('Redis Client Error', err));
+redisClient.on('error', (err: any) => console.log('Redis Client Error', err));
 redisClient.connect();
 
-// Middleware to proxy requests to the appropriate backend server
+// Unified middleware to handle both backend and frontend requests
 app.use(async (req, res, next) => {
     try {
         const host = req.hostname;
         const id = host.split(".")[0];
         
-        console.log(`Request for backend: ${id}, path: ${req.path}`);
+        console.log(`Request for: ${id}, path: ${req.path}`);
         
-        // Get the port for this backend from Redis
+        // Check if this is a backend deployment (has a port mapping)
         const port = await redisClient.hGet('backend-ports', id);
         
-        if (!port) {
-            return res.status(404).json({ 
-                error: 'Backend not found or not yet deployed',
-                id: id 
+        if (port) {
+            // This is a backend deployment - proxy the request
+            console.log(`Backend detected - Proxying to localhost:${port}`);
+            
+            const proxy = createProxyMiddleware({
+                target: `http://localhost:${port}`,
+                changeOrigin: true,
+                ws: true, // Enable WebSocket proxying
+                onError: (err: any, req: any, res: any) => {
+                    console.error(`Proxy error for ${id}:`, err);
+                    if (!res.headersSent) {
+                        res.status(502).json({ 
+                            error: 'Backend server unavailable',
+                            details: err.message 
+                        });
+                    }
+                },
+                onProxyReq: (proxyReq: any, req: any, res: any) => {
+                    console.log(`Proxying ${req.method} ${req.url} to port ${port}`);
+                }
             });
+            
+            return proxy(req, res, next);
         }
         
-        console.log(`Proxying to localhost:${port}`);
+        // No backend port found - try to serve as static frontend
+        console.log(`No backend found - Serving static files for ${id}`);
         
-        // Create a proxy middleware on the fly
-        const proxy = createProxyMiddleware({
-            target: `http://localhost:${port}`,
-            changeOrigin: true,
-            ws: true, // Enable WebSocket proxying
-            onError: (err, req, res) => {
-                console.error(`Proxy error for ${id}:`, err);
-                if (!res.headersSent) {
-                    res.status(502).json({ 
-                        error: 'Backend server unavailable',
-                        details: err.message 
-                    });
-                }
-            },
-            onProxyReq: (proxyReq, req, res) => {
-                console.log(`Proxying ${req.method} ${req.url} to port ${port}`);
+        let filePath = req.path;
+        if (filePath === "/" || filePath === "") {
+            filePath = "/index.html";
+        }
+        
+        try {
+            const contents = await s3.getObject({
+                Bucket: "vercel",
+                Key: `dist/${id}${filePath}`
+            }).promise();
+            
+            const type = filePath.endsWith("html") ? "text/html" 
+                : filePath.endsWith("css") ? "text/css" 
+                : filePath.endsWith("js") ? "application/javascript"
+                : "application/octet-stream";
+            
+            res.set("Content-Type", type);
+            res.send(contents.Body);
+        } catch (s3Error: any) {
+            console.error(`S3 error for ${id}${filePath}:`, s3Error.code);
+            if (s3Error.code === 'NoSuchKey') {
+                res.status(404).json({ 
+                    error: 'File not found',
+                    id: id,
+                    path: filePath
+                });
+            } else {
+                res.status(404).json({ 
+                    error: 'Deployment not found',
+                    id: id,
+                    message: 'Neither backend nor frontend deployment exists for this ID'
+                });
             }
-        });
-        
-        proxy(req, res, next);
+        }
     } catch (error: any) {
         console.error('Error handling request:', error);
         if (!res.headersSent) {
@@ -71,7 +112,7 @@ app.use(async (req, res, next) => {
     }
 });
 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Backend request handler listening on port ${PORT}`);
+    console.log(`Unified request handler listening on port ${PORT}`);
 });
