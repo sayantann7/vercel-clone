@@ -7,20 +7,32 @@ import { getAllFiles } from "./file";
 import path from "path";
 import { uploadFile } from "./aws";
 import { createClient } from "redis";
-const publisher = createClient();
-publisher.connect();
+
 require("dotenv").config();
 console.log(process.env.endpoint);
 
-
 console.log("---------------------TRYING TO CONNECT TO REDIS---------------------")
 
-const subscriber = createClient({
+const publisher = createClient({
+    username: 'default',
+    password: 'o2fs5b3mzpbhP8QAWQf9PpAJsgECJO5n',
     socket: {
-        host: 'localhost',
-        port: 6379
+        host: 'redis-10504.c212.ap-south-1-1.ec2.redns.redis-cloud.com',
+        port: 10504
     }
 });
+publisher.on('error', err => console.log('Redis Publisher Error', err));
+await publisher.connect();
+
+const subscriber = createClient({
+    username: 'default',
+    password: 'o2fs5b3mzpbhP8QAWQf9PpAJsgECJO5n',
+    socket: {
+        host: 'redis-10504.c212.ap-south-1-1.ec2.redns.redis-cloud.com',
+        port: 10504
+    }
+});
+subscriber.on('error', err => console.log('Redis Subscriber Error', err));
 
 console.log("---------------------SUBSCRIBER---------------------")
 console.log(subscriber);
