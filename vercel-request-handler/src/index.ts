@@ -1,6 +1,8 @@
 import express from "express";
 import AWS from "aws-sdk";
-require("dotenv").config();
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const s3 = new AWS.S3({
     accessKeyId: process.env.accessKeyId,

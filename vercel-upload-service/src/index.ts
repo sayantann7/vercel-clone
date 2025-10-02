@@ -7,8 +7,9 @@ import { getAllFiles } from "./file.js";
 import path from "path";
 import { uploadFile } from "./aws.js";
 import { createClient } from "redis";
+import dotenv from "dotenv";
 
-require("dotenv").config();
+dotenv.config();
 console.log(process.env.endpoint);
 
 console.log("---------------------TRYING TO CONNECT TO REDIS---------------------")
