@@ -150,7 +150,7 @@ function SiteNav() {
           <span className="text-lg tracking-tight">ZipHub</span>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <a className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors" href="https://github.com" target="_blank" rel="noreferrer">
+          <a className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors" href="https://github.com/sayantann7/vercel-clone" target="_blank" rel="noreferrer">
             <Github className="h-4 w-4" /> GitHub
           </a>
         </div>
