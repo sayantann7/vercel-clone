@@ -22,6 +22,10 @@ const publisher = createClient({
         port: 10504
     }
 });
+
+console.log("---------------------PUBLISHER---------------------")
+console.log(publisher);
+
 publisher.on('error', err => console.log('Redis Publisher Error', err));
 await publisher.connect();
 
@@ -47,8 +51,12 @@ app.use(express.json());
 
 app.post("/deploy", async (req, res) => {
     const repoUrl = req.body.repoUrl;
-    const id = generate(); // asd12
+    console.log("Cloning repo", repoUrl);
+    const id = generate();
+    console.log("Generated id", id);
     await simpleGit().clone(repoUrl, path.join(__dirname, `output/${id}`));
+
+    console.log("Cloned repo");
 
     const files = getAllFiles(path.join(__dirname, `output/${id}`));
 
