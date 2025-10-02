@@ -56,7 +56,9 @@ app.use(express.json());
 
 app.post("/deploy", async (req, res) => {
     const repoUrl = req.body.repoUrl;
-    console.log("Cloning repo", repoUrl);
+    const projectType = req.body.projectType || 'frontend'; // 'frontend' or 'backend'
+    
+    console.log(`Cloning ${projectType} repo:`, repoUrl);
     const id = generate();
     console.log("Generated id", id);
     await simpleGit().clone(repoUrl, path.join(__dirname, `output/${id}`));
@@ -82,25 +84,39 @@ app.post("/deploy", async (req, res) => {
 
     console.log("Files uploaded to S3");
 
-
-    await new Promise((resolve) => setTimeout(resolve, 10000))
-    publisher.lPush("build-queue", id);
-    // INSERT => SQL
-    // .create => 
-    publisher.hSet("status", id, "uploaded");
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+    
+    // Push to appropriate queue based on project type
+    if (projectType === 'backend') {
+        await publisher.lPush("backend-build-queue", id);
+        await publisher.hSet("backend-status", id, "uploaded");
+        console.log(`Backend project ${id} queued for deployment`);
+    } else {
+        await publisher.lPush("build-queue", id);
+        await publisher.hSet("status", id, "uploaded");
+        console.log(`Frontend project ${id} queued for deployment`);
+    }
 
     res.json({
-        id: id
-    })
-
+        id: id,
+        projectType: projectType
+    });
 });
 
 app.get("/status", async (req, res) => {
     const id = req.query.id;
-    const response = await subscriber.hGet("status", id as string);
+    const projectType = req.query.projectType || 'frontend';
+    
+    let response;
+    if (projectType === 'backend') {
+        response = await subscriber.hGet("backend-status", id as string);
+    } else {
+        response = await subscriber.hGet("status", id as string);
+    }
+    
     res.json({
         status: response
-    })
-})
+    });
+});
 
 app.listen(3001);

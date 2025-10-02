@@ -28,6 +28,7 @@ export function Landing() {
   const [statusLogs, setStatusLogs] = useState<StatusLog[]>([]);
   const [copied, setCopied] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [projectType, setProjectType] = useState<'frontend' | 'backend'>('frontend');
 
   const pushLog = useCallback((message: string, kind: StatusLog["kind"] = "info") => {
     setStatusLogs((l) => [...l, { ts: Date.now(), message, kind }]);
@@ -44,9 +45,12 @@ export function Landing() {
     if (!repoUrl.trim()) return;
     setUploading(true);
     setError(null);
-    pushLog("Starting deployment…");
+    pushLog(`Starting ${projectType} deployment…`);
     try {
-      const res = await axios.post(`${BACKEND_UPLOAD_URL}/deploy`, { repoUrl });
+      const res = await axios.post(`${BACKEND_UPLOAD_URL}/deploy`, { 
+        repoUrl,
+        projectType 
+      });
       setUploadId(res.data.id);
       pushLog(`Deployment queued with id ${res.data.id}`);
       pollStatus(res.data.id);
@@ -61,7 +65,7 @@ export function Landing() {
     setChecking(true);
     const interval = setInterval(async () => {
       try {
-        const response = await axios.get(`${BACKEND_UPLOAD_URL}/status?id=${id}`);
+        const response = await axios.get(`${BACKEND_UPLOAD_URL}/status?id=${id}&projectType=${projectType}`);
         const status = response.data.status;
         pushLog(`Status: ${status}`);
         if (status === "deployed") {
@@ -77,7 +81,11 @@ export function Landing() {
     }, 3000);
   };
 
-  const deployedUrl = uploadId ? `http://${uploadId}.ziphub.site` : "";
+  const deployedUrl = uploadId 
+    ? projectType === 'backend' 
+      ? `http://${uploadId}.api.ziphub.site` 
+      : `http://${uploadId}.ziphub.site`
+    : "";
 
   const copyUrl = async () => {
     if (!deployedUrl) return;
@@ -112,6 +120,8 @@ export function Landing() {
               uploadId={uploadId}
               startDeployment={startDeployment}
               checking={checking}
+              projectType={projectType}
+              setProjectType={setProjectType}
             />
             <StatusCard
               deployed={deployed}
@@ -175,13 +185,15 @@ function Hero() {
 }
 
 // --- Deploy Form Card ---
-function DeployCard({ repoUrl, setRepoUrl, uploading, uploadId, startDeployment, checking }: {
+function DeployCard({ repoUrl, setRepoUrl, uploading, uploadId, startDeployment, checking, projectType, setProjectType }: {
   repoUrl: string;
   setRepoUrl: (v: string) => void;
   uploading: boolean;
   uploadId: string;
   startDeployment: () => void;
   checking: boolean;
+  projectType: 'frontend' | 'backend';
+  setProjectType: (v: 'frontend' | 'backend') => void;
 }) {
   const disabled = uploading || (!!uploadId && !checking);
   const launchRocket = (e: React.MouseEvent) => {
@@ -229,6 +241,29 @@ function DeployCard({ repoUrl, setRepoUrl, uploading, uploadId, startDeployment,
         <CardDescription>Public GitHub repositories supported for now.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label>Project Type</Label>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={projectType === 'frontend' ? 'default' : 'outline'}
+              onClick={() => setProjectType('frontend')}
+              disabled={uploading}
+              className="flex-1"
+            >
+              Frontend
+            </Button>
+            <Button
+              type="button"
+              variant={projectType === 'backend' ? 'default' : 'outline'}
+              onClick={() => setProjectType('backend')}
+              disabled={uploading}
+              className="flex-1"
+            >
+              Backend
+            </Button>
+          </div>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="github-url">Repository URL</Label>
           <Input
