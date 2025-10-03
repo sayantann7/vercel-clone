@@ -6,6 +6,7 @@ import { CardTitle, CardDescription, CardHeader, CardContent, Card, CardFooter }
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { useState, useEffect, useCallback } from "react"
 import { Github, Upload, Rocket, ExternalLink, Copy, Check, RefreshCw } from "lucide-react"
 import axios from "axios"
@@ -29,6 +30,10 @@ export function Landing() {
   const [copied, setCopied] = useState(false);
   const [checking, setChecking] = useState(false);
   const [projectType, setProjectType] = useState<'frontend' | 'backend'>('frontend');
+  const [envVars, setEnvVars] = useState("");
+  const [installCommand, setInstallCommand] = useState("npm install");
+  const [buildCommand, setBuildCommand] = useState("");
+  const [runCommand, setRunCommand] = useState("npm start");
 
   const pushLog = useCallback((message: string, kind: StatusLog["kind"] = "info") => {
     setStatusLogs((l) => [...l, { ts: Date.now(), message, kind }]);
@@ -49,7 +54,11 @@ export function Landing() {
     try {
       const res = await axios.post(`${BACKEND_UPLOAD_URL}/deploy`, { 
         repoUrl,
-        projectType 
+        projectType,
+        envVars,
+        installCommand: installCommand || "npm install",
+        buildCommand: buildCommand || "",
+        runCommand: runCommand || (projectType === 'backend' ? 'npm start' : 'npm run build')
       });
       setUploadId(res.data.id);
       pushLog(`Deployment queued with id ${res.data.id}`);
@@ -122,6 +131,14 @@ export function Landing() {
               checking={checking}
               projectType={projectType}
               setProjectType={setProjectType}
+              envVars={envVars}
+              setEnvVars={setEnvVars}
+              installCommand={installCommand}
+              setInstallCommand={setInstallCommand}
+              buildCommand={buildCommand}
+              setBuildCommand={setBuildCommand}
+              runCommand={runCommand}
+              setRunCommand={setRunCommand}
             />
             <StatusCard
               deployed={deployed}
@@ -185,7 +202,12 @@ function Hero() {
 }
 
 // --- Deploy Form Card ---
-function DeployCard({ repoUrl, setRepoUrl, uploading, uploadId, startDeployment, checking, projectType, setProjectType }: {
+function DeployCard({ 
+  repoUrl, setRepoUrl, uploading, uploadId, startDeployment, checking, 
+  projectType, setProjectType, envVars, setEnvVars,
+  installCommand, setInstallCommand, buildCommand, setBuildCommand,
+  runCommand, setRunCommand
+}: {
   repoUrl: string;
   setRepoUrl: (v: string) => void;
   uploading: boolean;
@@ -194,6 +216,14 @@ function DeployCard({ repoUrl, setRepoUrl, uploading, uploadId, startDeployment,
   checking: boolean;
   projectType: 'frontend' | 'backend';
   setProjectType: (v: 'frontend' | 'backend') => void;
+  envVars: string;
+  setEnvVars: (v: string) => void;
+  installCommand: string;
+  setInstallCommand: (v: string) => void;
+  buildCommand: string;
+  setBuildCommand: (v: string) => void;
+  runCommand: string;
+  setRunCommand: (v: string) => void;
 }) {
   const disabled = uploading || (!!uploadId && !checking);
   const launchRocket = (e: React.MouseEvent) => {
@@ -275,6 +305,57 @@ function DeployCard({ repoUrl, setRepoUrl, uploading, uploadId, startDeployment,
             className="placeholder:text-muted-foreground/60"
           />
         </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="env-vars">Environment Variables (Optional)</Label>
+          <Textarea
+            id="env-vars"
+            value={envVars}
+            disabled={uploading}
+            onChange={(e) => setEnvVars(e.target.value)}
+            placeholder="KEY1=value1&#10;KEY2=value2&#10;DATABASE_URL=postgres://..."
+            className="placeholder:text-muted-foreground/60 font-mono text-xs"
+            rows={3}
+          />
+          <p className="text-xs text-muted-foreground">One per line, format: KEY=value</p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="install-cmd">Install Command</Label>
+          <Input
+            id="install-cmd"
+            value={installCommand}
+            disabled={uploading}
+            onChange={(e) => setInstallCommand(e.target.value)}
+            placeholder="npm install"
+            className="placeholder:text-muted-foreground/60 font-mono text-sm"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="build-cmd">Build Command (Optional)</Label>
+          <Input
+            id="build-cmd"
+            value={buildCommand}
+            disabled={uploading}
+            onChange={(e) => setBuildCommand(e.target.value)}
+            placeholder={projectType === 'frontend' ? 'npm run build' : 'Leave empty for backend'}
+            className="placeholder:text-muted-foreground/60 font-mono text-sm"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="run-cmd">{projectType === 'backend' ? 'Start Command' : 'Build Command Default'}</Label>
+          <Input
+            id="run-cmd"
+            value={runCommand}
+            disabled={uploading}
+            onChange={(e) => setRunCommand(e.target.value)}
+            placeholder={projectType === 'backend' ? 'npm start' : 'npm run build'}
+            className="placeholder:text-muted-foreground/60 font-mono text-sm"
+          />
+        </div>
+
         <Button
           onClick={(e) => { if (!uploading && !uploadId) launchRocket(e); startDeployment(); }}
           disabled={!repoUrl.trim() || disabled}

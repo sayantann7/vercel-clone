@@ -37,7 +37,11 @@ async function main() {
                 await downloadS3Folder(`output/${id}`);
                 console.log("Downloaded backend project", id);
                 
-                await startBackendServer(id, publisher);
+                // Get configuration from Redis
+                const config = await publisher.hGetAll(`deploy-config:${id}`);
+                console.log("Configuration for", id, config);
+                
+                await startBackendServer(id, publisher, config);
                 console.log("Backend server started for", id);
                 
                 await publisher.hSet('backend-status', id, 'deployed');

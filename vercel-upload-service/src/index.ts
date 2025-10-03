@@ -57,6 +57,10 @@ app.use(express.json());
 app.post("/deploy", async (req, res) => {
     const repoUrl = req.body.repoUrl;
     const projectType = req.body.projectType || 'frontend'; // 'frontend' or 'backend'
+    const envVars = req.body.envVars || '';
+    const installCommand = req.body.installCommand || 'npm install';
+    const buildCommand = req.body.buildCommand || '';
+    const runCommand = req.body.runCommand || 'npm start';
     
     console.log(`Cloning ${projectType} repo:`, repoUrl);
     const id = generate();
@@ -85,6 +89,16 @@ app.post("/deploy", async (req, res) => {
     console.log("Files uploaded to S3");
 
     await new Promise((resolve) => setTimeout(resolve, 10000));
+    
+    // Store configuration in Redis
+    const config = {
+        envVars,
+        installCommand,
+        buildCommand,
+        runCommand,
+        projectType
+    };
+    await publisher.hSet(`deploy-config:${id}`, config);
     
     // Push to appropriate queue based on project type
     if (projectType === 'backend') {
